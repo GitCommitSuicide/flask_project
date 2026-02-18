@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Exercises - FitLife{% endblock %}
+
+{% block content %}
+<div class="exercises-container">
+    <div class="page-header">
+        <h1><i class="fas fa-running"></i> Exercise Library</h1>
+        <p>Choose from our comprehensive collection of exercises to build your perfect workout</p>
+    </div>
+    
+    {% for category, exercises in exercise_categories.items() %}
+        <div class="exercise-category">
+            <div class="category-header">
+                <h2>
+                    {% if category == 'strength' %}
+                        <i class="fas fa-dumbbell"></i> Strength Training
+                    {% elif category == 'cardio' %}
+                        <i class="fas fa-heartbeat"></i> Cardio
+                    {% elif category == 'bodyweight' %}
+                        <i class="fas fa-male"></i> Bodyweight
+                    {% elif category == 'flexibility' %}
+                        <i class="fas fa-expand-arrows-alt"></i> Flexibility
+                    {% else %}
+                        <i class="fas fa-leaf"></i> {{ category.title() }}
+                    {% endif %}
+                </h2>
+            </div>
+            
+            <div class="exercises-grid">
+                {% for exercise in exercises %}
+                    <div class="exercise-card">
+                        <div class="exercise-image">
+                            <img src="/static/images/{{ exercise.image_url }}" alt="{{ exercise.name }}" onerror="this.src='/static/images/exercise_placeholder.jpg'">
+                            <div class="exercise-overlay">
+                                <button class="btn btn-primary" onclick="openExerciseModal({{ exercise.id }}, '{{ exercise.name }}', {{ exercise.calories_per_minute }})">
+                                    <i class="fas fa-play"></i> Start Exercise
+                                </button>
+                            </div>
+                        </div>
+                        <div class="exercise-info">
+                            <h3>{{ exercise.name }}</h3>
+                            <p class="exercise-description">{{ exercise.description }}</p>
+                            <div class="exercise-stats">
+                                <span class="stat">
+                                    <i class="fas fa-fire"></i>
+                                    {{ exercise.calories_per_minute }} cal/min
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-tag"></i>
+                                    {{ exercise.category.title() }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Exercise Modal -->
+<div id="exerciseModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalExerciseName">Exercise</h2>
+            <span class="close" onclick="closeExerciseModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{ url_for('log_exercise') }}">
+                <input type="hidden" id="modalExerciseId" name="exercise_id">
+                <div class="form-group">
+                    <label for="duration">Duration (minutes)</label>
+                    <input type="number" id="duration" name="duration" min="1" max="300" value="30" required>
+                </div>
+                <div class="calories-preview">
+                    <p>Estimated calories burned: <span id="caloriesEstimate">0</span></p>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-save"></i> Log Exercise
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentCaloriesPerMinute = 0;
+
+function openExerciseModal(exerciseId, exerciseName, caloriesPerMinute) {
+    document.getElementById('modalExerciseId').value = exerciseId;
+    document.getElementById('modalExerciseName').textContent = exerciseName;
+    currentCaloriesPerMinute = caloriesPerMinute;
+    updateCaloriesEstimate();
+    document.getElementById('exerciseModal').style.display = 'block';
+}
+
+function closeExerciseModal() {
+    document.getElementById('exerciseModal').style.display = 'none';
+}
+
+function updateCaloriesEstimate() {
+    const duration = document.getElementById('duration').value;
+    const calories = Math.round(duration * currentCaloriesPerMinute);
+    document.getElementById('caloriesEstimate').textContent = calories;
+}
+
+document.getElementById('duration').addEventListener('input', updateCaloriesEstimate);
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('exerciseModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

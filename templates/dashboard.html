@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FitLife{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome back, {{ session.username }}! 💪</h1>
+        <p>Here's your fitness overview for today</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-weight"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Current Weight</h3>
+                <p class="stat-value">{{ user.weight }} kg</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="stat-content">
+                <h3>BMI</h3>
+                <p class="stat-value">{{ bmi }}</p>
+                <small class="stat-label">
+                    {% if bmi < 18.5 %}Underweight
+                    {% elif bmi < 25 %}Normal
+                    {% elif bmi < 30 %}Overweight
+                    {% else %}Obese
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-fire"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Calories Burned</h3>
+                <p class="stat-value">{{ calories_burned }}</p>
+                <small class="stat-label">Today</small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-utensils"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Calories Consumed</h3>
+                <p class="stat-value">{{ calories_consumed }}</p>
+                <small class="stat-label">Today</small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Net Calories</h3>
+                <p class="stat-value {{ 'positive' if net_calories > 0 else 'negative' }}">
+                    {{ '+' if net_calories > 0 else '' }}{{ net_calories }}
+                </p>
+                <small class="stat-label">
+                    {% if user.goal == 'lose_weight' %}
+                        Target: Negative
+                    {% elif user.goal == 'gain_weight' %}
+                        Target: Positive
+                    {% else %}
+                        Target: Balanced
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-target"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Goal</h3>
+                <p class="stat-value">
+                    {% if user.goal == 'lose_weight' %}Lose Weight
+                    {% elif user.goal == 'gain_weight' %}Gain Weight
+                    {% else %}Maintain Weight
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-sections">
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Update Progress</h2>
+            </div>
+            <div class="progress-form">
+                <form method="POST" action="{{ url_for('update_progress') }}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight">Current Weight (kg)</label>
+                            <input type="number" id="weight" name="weight" step="0.1" value="{{ user.weight }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Notes (optional)</label>
+                            <input type="text" id="notes" name="notes" placeholder="How are you feeling today?">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Progress
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i> Recent Progress</h2>
+            </div>
+            <div class="progress-list">
+                {% if recent_progress %}
+                    {% for progress in recent_progress %}
+                        <div class="progress-item">
+                            <div class="progress-date">{{ progress.date.strftime('%b %d') }}</div>
+                            <div class="progress-weight">{{ progress.weight }} kg</div>
+                            {% if progress.notes %}
+                                <div class="progress-notes">{{ progress.notes }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-data">No progress data yet. Start tracking today!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="quick-actions">
+        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+        <div class="action-grid">
+            <a href="{{ url_for('exercises') }}" class="action-card">
+                <i class="fas fa-running"></i>
+                <h3>Log Workout</h3>
+                <p>Track your exercise session</p>
+            </a>
+            <a href="{{ url_for('diet') }}" class="action-card">
+                <i class="fas fa-utensils"></i>
+                <h3>Log Meal</h3>
+                <p>Record what you ate</p>
+            </a>
+            <a href="{{ url_for('yoga') }}" class="action-card">
+                <i class="fas fa-leaf"></i>
+                <h3>Yoga Session</h3>
+                <p>Practice mindfulness</p>
+            </a>
+            <a href="{{ url_for('chatbot') }}" class="action-card">
+                <i class="fas fa-robot"></i>
+                <h3>Ask Coach</h3>
+                <p>Get fitness advice</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

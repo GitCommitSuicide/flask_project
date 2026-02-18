@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Fitness Coach - FitLife{% endblock %}
+
+{% block content %}
+<div class="chatbot-container">
+    <div class="page-header">
+        <h1><i class="fas fa-robot"></i> Your AI Fitness Coach</h1>
+        <p>Ask me anything about fitness, nutrition, workouts, or wellness!</p>
+    </div>
+    
+    <div class="chat-interface">
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>Hello! I'm your AI fitness coach. I'm here to help you with:</p>
+                    <ul>
+                        <li>🏋️ Workout recommendations</li>
+                        <li>🧘 Yoga and meditation guidance</li>
+                        <li>🥗 Nutrition and diet advice</li>
+                        <li>📊 BMI and calorie information</li>
+                        <li>💪 Weight management tips</li>
+                    </ul>
+                    <p>What would you like to know?</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="quick-questions">
+                <button class="quick-btn" onclick="sendQuickMessage('What workout should I do today?')">
+                    <i class="fas fa-dumbbell"></i> Daily Workout
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('Suggest a yoga routine')">
+                    <i class="fas fa-leaf"></i> Yoga Routine
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('How to lose weight?')">
+                    <i class="fas fa-weight"></i> Weight Loss
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('Calculate my BMI')">
+                    <i class="fas fa-calculator"></i> BMI Info
+                </button>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type your fitness question here..." maxlength="500">
+                <button id="sendButton" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (message === '') return;
+    
+    // Add user message to chat
+    addMessage(message, 'user');
+    
+    // Clear input
+    input.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Send to backend
+    fetch('/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideTypingIndicator();
+        addMessage(data.response, 'bot');
+    })
+    .catch(error => {
+        hideTypingIndicator();
+        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+    });
+}
+
+function sendQuickMessage(message) {
+    document.getElementById('messageInput').value = message;
+    sendMessage();
+}
+
+function addMessage(message, sender) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+    
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.innerHTML = `<p>${message}</p>`;
+    
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(content);
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const chatMessages = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot-message typing-indicator';
+    typingDiv.id = 'typingIndicator';
+    
+    typingDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// Send message on Enter key
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
+{% endblock %}

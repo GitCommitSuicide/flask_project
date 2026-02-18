@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Diet & Nutrition - FitLife{% endblock %}
+
+{% block content %}
+<div class="diet-container">
+    <div class="page-header">
+        <h1><i class="fas fa-utensils"></i> Diet & Nutrition</h1>
+        <p>Fuel your body with the right nutrition for your fitness goals</p>
+    </div>
+    
+    <div class="diet-overview">
+        <div class="goal-card">
+            <h3><i class="fas fa-target"></i> Your Goal</h3>
+            <p class="goal-text">
+                {% if user.goal == 'lose_weight' %}
+                    <span class="goal-lose">Lose Weight</span>
+                    <br><small>Focus on creating a caloric deficit</small>
+                {% elif user.goal == 'gain_weight' %}
+                    <span class="goal-gain">Gain Weight</span>
+                    <br><small>Focus on healthy caloric surplus</small>
+                {% else %}
+                    <span class="goal-maintain">Maintain Weight</span>
+                    <br><small>Focus on balanced nutrition</small>
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="nutrition-tips">
+            <h3><i class="fas fa-lightbulb"></i> Nutrition Tips</h3>
+            {% if user.goal == 'lose_weight' %}
+                <ul>
+                    <li>Eat in a caloric deficit (burn more than you consume)</li>
+                    <li>Focus on protein to maintain muscle mass</li>
+                    <li>Include plenty of vegetables and fiber</li>
+                    <li>Stay hydrated and avoid empty calories</li>
+                </ul>
+            {% elif user.goal == 'gain_weight' %}
+                <ul>
+                    <li>Eat in a caloric surplus (consume more than you burn)</li>
+                    <li>Focus on nutrient-dense, high-calorie foods</li>
+                    <li>Include healthy fats and complex carbs</li>
+                    <li>Eat frequent, balanced meals</li>
+                </ul>
+            {% else %}
+                <ul>
+                    <li>Balance calories in with calories out</li>
+                    <li>Focus on whole, unprocessed foods</li>
+                    <li>Include all macronutrients in proper ratios</li>
+                    <li>Listen to your body's hunger cues</li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% for category, meals in meal_categories.items() %}
+        <div class="meal-category">
+            <div class="category-header">
+                <h2>
+                    {% if category == 'breakfast' %}
+                        <i class="fas fa-coffee"></i> Breakfast
+                    {% elif category == 'lunch' %}
+                        <i class="fas fa-hamburger"></i> Lunch
+                    {% elif category == 'dinner' %}
+                        <i class="fas fa-drumstick-bite"></i> Dinner
+                    {% else %}
+                        <i class="fas fa-cookie-bite"></i> Snacks
+                    {% endif %}
+                </h2>
+            </div>
+            
+            <div class="meals-grid">
+                {% for meal in meals %}
+                    <div class="meal-card {{ 'vegetarian' if meal.is_vegetarian else 'non-vegetarian' }}">
+                        <div class="meal-header">
+                            <h3>{{ meal.name }}</h3>
+                            {% if meal.is_vegetarian %}
+                                <span class="veg-badge"><i class="fas fa-leaf"></i> Veg</span>
+                            {% else %}
+                                <span class="non-veg-badge"><i class="fas fa-drumstick-bite"></i> Non-Veg</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="meal-nutrition">
+                            <div class="nutrition-item">
+                                <i class="fas fa-fire"></i>
+                                <span>{{ meal.calories }} cal</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <i class="fas fa-dumbbell"></i>
+                                <span>{{ meal.protein }}g protein</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <i class="fas fa-bread-slice"></i>
+                                <span>{{ meal.carbs }}g carbs</span>
+                            </div>
+                            <div class="nutrition-item">
+                                <i class="fas fa-tint"></i>
+                                <span>{{ meal.fats }}g fats</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-small" onclick="openMealModal({{ meal.id }}, '{{ meal.name }}', {{ meal.calories }})">
+                            <i class="fas fa-plus"></i> Log Meal
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+    
+    <div class="meal-planning">
+        <h2><i class="fas fa-calendar-alt"></i> Weekly Meal Plan Suggestions</h2>
+        
+        <div class="meal-plan-grid">
+            <div class="meal-plan-card">
+                <h3><i class="fas fa-weight"></i> Weight Loss Plan</h3>
+                <div class="plan-details">
+                    <p><strong>Daily Calories:</strong> 1500-1800</p>
+                    <p><strong>Protein:</strong> 30% | <strong>Carbs:</strong> 40% | <strong>Fats:</strong> 30%</p>
+                </div>
+                <div class="sample-day">
+                    <h4>Sample Day:</h4>
+                    <ul>
+                        <li><strong>Breakfast:</strong> Greek Yogurt with Berries</li>
+                        <li><strong>Lunch:</strong> Grilled Chicken Salad</li>
+                        <li><strong>Dinner:</strong> Grilled Salmon with Vegetables</li>
+                        <li><strong>Snacks:</strong> Apple, Almonds</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="meal-plan-card">
+                <h3><i class="fas fa-plus"></i> Weight Gain Plan</h3>
+                <div class="plan-details">
+                    <p><strong>Daily Calories:</strong> 2500-3000</p>
+                    <p><strong>Protein:</strong> 25% | <strong>Carbs:</strong> 45% | <strong>Fats:</strong> 30%</p>
+                </div>
+                <div class="sample-day">
+                    <h4>Sample Day:</h4>
+                    <ul>
+                        <li><strong>Breakfast:</strong> Oatmeal with Nuts and Banana</li>
+                        <li><strong>Lunch:</strong> Quinoa Bowl with Chicken</li>
+                        <li><strong>Dinner:</strong> Pasta with Meat Sauce</li>
+                        <li><strong>Snacks:</strong> Protein Shake, Trail Mix</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="meal-plan-card">
+                <h3><i class="fas fa-balance-scale"></i> Maintenance Plan</h3>
+                <div class="plan-details">
+                    <p><strong>Daily Calories:</strong> 2000-2300</p>
+                    <p><strong>Protein:</strong> 25% | <strong>Carbs:</strong> 45% | <strong>Fats:</strong> 30%</p>
+                </div>
+                <div class="sample-day">
+                    <h4>Sample Day:</h4>
+                    <ul>
+                        <li><strong>Breakfast:</strong> Avocado Toast with Eggs</li>
+                        <li><strong>Lunch:</strong> Balanced Bowl with Protein</li>
+                        <li><strong>Dinner:</strong> Lean Protein with Vegetables</li>
+                        <li><strong>Snacks:</strong> Fruits, Nuts</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Meal Modal -->
+<div id="mealModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalMealName">Log Meal</h2>
+            <span class="close" onclick="closeMealModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{ url_for('log_meal') }}">
+                <input type="hidden" id="modalMealId" name="meal_id">
+                <div class="form-group">
+                    <label for="quantity">Serving Size</label>
+                    <input type="number" id="quantity" name="quantity" min="0.1" max="10" step="0.1" value="1" required>
+                    <small>1 = standard serving</small>
+                </div>
+                <div class="calories-preview">
+                    <p>Total calories: <span id="mealCaloriesEstimate">0</span></p>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-save"></i> Log Meal
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentMealCalories = 0;
+
+function openMealModal(mealId, mealName, calories) {
+    document.getElementById('modalMealId').value = mealId;
+    document.getElementById('modalMealName').textContent = mealName;
+    currentMealCalories = calories;
+    updateMealCaloriesEstimate();
+    document.getElementById('mealModal').style.display = 'block';
+}
+
+function closeMealModal() {
+    document.getElementById('mealModal').style.display = 'none';
+}
+
+function updateMealCaloriesEstimate() {
+    const quantity = document.getElementById('quantity').value;
+    const totalCalories = Math.round(quantity * currentMealCalories);
+    document.getElementById('mealCaloriesEstimate').textContent = totalCalories;
+}
+
+document.getElementById('quantity').addEventListener('input', updateMealCaloriesEstimate);
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const mealModal = document.getElementById('mealModal');
+    if (event.target == mealModal) {
+        mealModal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

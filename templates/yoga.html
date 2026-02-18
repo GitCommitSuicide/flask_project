@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Yoga - FitLife{% endblock %}
+
+{% block content %}
+<div class="yoga-container">
+    <div class="page-header">
+        <h1><i class="fas fa-leaf"></i> Yoga & Mindfulness</h1>
+        <p>Find inner peace and flexibility with our curated yoga poses and practices</p>
+    </div>
+    
+    <div class="yoga-benefits">
+        <div class="benefit-card">
+            <i class="fas fa-heart"></i>
+            <h3>Stress Relief</h3>
+            <p>Reduce anxiety and promote relaxation</p>
+        </div>
+        <div class="benefit-card">
+            <i class="fas fa-expand-arrows-alt"></i>
+            <h3>Flexibility</h3>
+            <p>Improve range of motion and mobility</p>
+        </div>
+        <div class="benefit-card">
+            <i class="fas fa-balance-scale"></i>
+            <h3>Balance</h3>
+            <p>Enhance stability and coordination</p>
+        </div>
+        <div class="benefit-card">
+            <i class="fas fa-brain"></i>
+            <h3>Mental Clarity</h3>
+            <p>Improve focus and mindfulness</p>
+        </div>
+    </div>
+    
+    <div class="yoga-poses">
+        <h2><i class="fas fa-om"></i> Yoga Poses</h2>
+        <div class="poses-grid">
+            {% for pose in yoga_poses %}
+                <div class="pose-card difficulty-{{ pose.difficulty }}">
+                    <div class="pose-image">
+                        <img src="/static/images/{{ pose.image_url }}" alt="{{ pose.name }}" onerror="this.src='/static/images/yoga_placeholder.jpg'">
+                        <div class="difficulty-badge">{{ pose.difficulty.title() }}</div>
+                    </div>
+                    <div class="pose-info">
+                        <h3>{{ pose.name }}</h3>
+                        <p class="pose-benefits">{{ pose.benefits }}</p>
+                        <div class="pose-stats">
+                            <div class="stat">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ pose.hold_time }}s hold</span>
+                            </div>
+                            <div class="stat">
+                                <i class="fas fa-fire"></i>
+                                <span>{{ pose.calories_burned }} calories</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-small" onclick="startPoseTimer({{ pose.hold_time }}, '{{ pose.name }}')">
+                            <i class="fas fa-play"></i> Start Pose
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="yoga-routines">
+        <h2><i class="fas fa-list"></i> Suggested Routines</h2>
+        <div class="routines-grid">
+            <div class="routine-card">
+                <h3><i class="fas fa-sun"></i> Morning Flow</h3>
+                <p>Energizing 15-minute routine to start your day</p>
+                <ul>
+                    <li>Mountain Pose (1 min)</li>
+                    <li>Downward Dog (2 min)</li>
+                    <li>Warrior I (2 min each side)</li>
+                    <li>Tree Pose (2 min each side)</li>
+                    <li>Child's Pose (3 min)</li>
+                </ul>
+                <button class="btn btn-primary">Start Routine</button>
+            </div>
+            
+            <div class="routine-card">
+                <h3><i class="fas fa-moon"></i> Evening Relaxation</h3>
+                <p>Calming 20-minute routine for better sleep</p>
+                <ul>
+                    <li>Child's Pose (3 min)</li>
+                    <li>Pigeon Pose (3 min each side)</li>
+                    <li>Cobra Pose (2 min)</li>
+                    <li>Triangle Pose (2 min each side)</li>
+                    <li>Meditation (5 min)</li>
+                </ul>
+                <button class="btn btn-primary">Start Routine</button>
+            </div>
+            
+            <div class="routine-card">
+                <h3><i class="fas fa-dumbbell"></i> Strength & Balance</h3>
+                <p>Challenging 25-minute routine for strength</p>
+                <ul>
+                    <li>Warrior I & II (3 min each)</li>
+                    <li>Tree Pose (3 min each side)</li>
+                    <li>Crow Pose (2 min)</li>
+                    <li>Plank variations (5 min)</li>
+                    <li>Cool down (5 min)</li>
+                </ul>
+                <button class="btn btn-primary">Start Routine</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Timer Modal -->
+<div id="timerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="timerPoseName">Pose Timer</h2>
+            <span class="close" onclick="closeTimer()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="timer-display">
+                <div class="timer-circle">
+                    <span id="timerDisplay">00:00</span>
+                </div>
+                <div class="timer-controls">
+                    <button id="timerBtn" class="btn btn-primary" onclick="toggleTimer()">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetTimer()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let timerInterval;
+let timerSeconds = 0;
+let totalSeconds = 0;
+let isTimerRunning = false;
+
+function startPoseTimer(holdTime, poseName) {
+    totalSeconds = holdTime;
+    timerSeconds = holdTime;
+    document.getElementById('timerPoseName').textContent = poseName;
+    updateTimerDisplay();
+    document.getElementById('timerModal').style.display = 'block';
+    isTimerRunning = false;
+    document.getElementById('timerBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+}
+
+function toggleTimer() {
+    if (isTimerRunning) {
+        pauseTimer();
+    } else {
+        startTimer();
+    }
+}
+
+function startTimer() {
+    isTimerRunning = true;
+    document.getElementById('timerBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+    
+    timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerDisplay();
+        
+        if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            document.getElementById('timerBtn').innerHTML = '<i class="fas fa-check"></i> Complete';
+            alert('Pose complete! Great job!');
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    document.getElementById('timerBtn').innerHTML = '<i class="fas fa-play"></i> Resume';
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    timerSeconds = totalSeconds;
+    isTimerRunning = false;
+    updateTimerDisplay();
+    document.getElementById('timerBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timerSeconds / 60);
+    const seconds = timerSeconds % 60;
+    document.getElementById('timerDisplay').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function closeTimer() {
+    clearInterval(timerInterval);
+    document.getElementById('timerModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('timerModal');
+    if (event.target == modal) {
+        closeTimer();
+    }
+}
+</script>
+{% endblock %}
